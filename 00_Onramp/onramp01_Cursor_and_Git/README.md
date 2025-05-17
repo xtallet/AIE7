@@ -14,7 +14,7 @@
     - [Pull fresh starter code](#pull-fresh-starter-code)
     - [Develop locally](#develop-locally)
     - [Stage & commit changes](#stage--commit-changes)
-    - [Push to your fork](#push-to-your-fork)
+    - [Push to your repository](#push-to-your-repository)
 
 </details>
 
@@ -30,12 +30,12 @@
 3. Always clone/push with **SSH URLs** (`git@github.com:...`) for seamless, secure auth.
 
 ## Git Workflow
-* Keep your fork current without overwriting the upstream repository.
+* Keep your repository current without overwriting the upstream repository.
 * Guarantee you always start with the latest assignment skeleton.
 
 ### Create a Remote Architecture
-**origin** = your personal fork (student repo)
-**upstream** = class master repo (AI-Maker-Space)
+**origin** = your personal repository (student repo)
+**upstream** = class main repo (AI-Maker-Space)
 
 #### Clone Your Local Repository
 ```bash
@@ -73,7 +73,7 @@ git add .
 git commit -m "meaningful message"
 ```
 
-#### Push to your fork
+#### Push to your repository
 ```bash
 git push origin main
 ```
