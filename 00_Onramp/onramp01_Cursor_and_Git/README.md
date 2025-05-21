@@ -1,4 +1,4 @@
-# AIE7 ROADMAP – ONRAMP SESSION #1
+# Session 1: Cursor IDE Setup, GitHub & Git Basics
 
 <details>
   <summary>📑 **Table of Contents**</summary>
