@@ -106,7 +106,7 @@ Assistant: That’s correct. Well done!
 
 ---
 
-### 7. **Cursor IDE **
+### 7. **Cursor IDE**
 
 * Cursor: IDE with AI features
 * Try multiple models (Claude, OpenAI, DeepSeek)
