@@ -30,7 +30,7 @@ In programming, this helps keep your code clean, reusable, and easier to underst
 ### Aspect Tested
 The response is factually correct, well-structured, clear for beginners, and follows an appropriate style. Although not all aspects (such as safety or tool use) are tested in this case, for the applicable criteria, the model’s output is very strong.
 
-
+<br><br>
 # 2. Read the following paragraph and provide a concise summary of the key points…
 
 ### Developer Message
@@ -48,7 +48,7 @@ The global shift to renewable energy is speeding up due to cheaper solar and win
 ### Aspect Tested
 The expected response meets the goals of the Developer Message: it provides a clear, objective, and accurate summary, highlighting the key points without adding interpretation. The model demonstrates solid understanding of the paragraph, maintains a neutral tone, and preserves the core structure of the original argument. The level of compression and rephrasing is appropriate for a general summarization task.
 
-
+<br><br>
 # 3. Write a short, imaginative story (100–150 words) about a robot finding friendship in an unexpected place
 
 ### Developer Message
@@ -67,7 +67,7 @@ From that night on, amidst the clutter and decay, metal and fur became inseparab
 ### Aspect Tested
 The story is well-crafted, emotionally rich, and fully meets the prompt. It’s creative, touching, and written in a clear and accessible style. The model shows a strong understanding of narrative structure within a limited word count, and it respects the requested length (approximately 130 words).
 
-
+<br><br>
 # 4. If a store sells apples in packs of 4 and oranges in packs of 3, how many packs of each do I need to buy to get exactly 12 apples and 9 oranges?
 
 ### Developer Message
@@ -92,6 +92,7 @@ To get exactly 9 oranges:
 ### Aspect Tested
 The model’s response is clear, correct, and directly aligned with the prompt. It presents the step-by-step reasoning in a logical and accurate way, with basic calculations clearly explained. The answer is suitable for both users seeking a quick solution and those who want to understand the process.
 
+<br><br>
 # 5. Rewrite the following paragraph in a professional, formal tone…
 
 ### Developer Message
@@ -108,3 +109,26 @@ It is imperative to address the issues present in the current system, as they ar
 
 ### Aspect Tested
 The response is clear, appropriate, and meets the goals of the Developer Message. The model has transformed the original paragraph into a professional and formal tone, maintaining the essential meaning while enhancing precision and style. The text is coherent, well-structured, and suitable for business or academic contexts.
+
+<br><br>
+# Discussion Question #1
+
+### What are some limitations of vibe checking as an evaluation tool?
+
+It is my understanding that Vibe Checking main purpose is to detect serious and obvious failures early, before investing time in more in-depth or formal evaluations.
+
+So I think it's a quick way to evaluate the model and the answers it gives you, but being aware that these are superficial evaluations.
+However, this process can miss important errors if they are not immediately obvious.
+For this reason I think it is essential to complement it with structured and measurable evaluation methods to ensure the quality of the system.
+
+Asking ChatGPT about it, it provides the following answer :
+
+- Lack of Rigor: Vibe checking is informal and unstructured, so it doesn’t follow systematic testing procedures. This can lead to inconsistent or incomplete coverage of system capabilities.
+
+- Subjectivity: It relies heavily on human intuition and informal judgment, which introduces bias and may miss subtle or complex issues.
+
+- Not Comprehensive: It focuses only on immediately noticeable failures and does not assess overall performance, edge cases, or long-term robustness.
+
+- No Metrics or Benchmarks: It doesn’t produce quantifiable results, making it difficult to compare models over time or across versions.
+
+- Overlooks Silent Failures: If a model gives plausible but incorrect responses, these may go undetected without more targeted or rigorous evaluation.
