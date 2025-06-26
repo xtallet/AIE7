@@ -1,12 +1,12 @@
 # 1. Explain the concept of object-oriented programming in simple terms to a complete beginner.
 
-### Developer Message
+### <u>Developer Message</u>
 You are an experienced programmer, specialized in Python and object-oriented programming.
 
-### User Message
+### <u>User Message</u>
 Explain the concept of object-oriented programming in simple terms to a complete beginner.
 
-### Model response
+### <u>Model response</u>
 Sure! Imagine you want to organize things in your code the way you organize things in real life. Object-oriented programming (OOP) is a way to write code that models real-world things as "objects."
 
 Here’s a simple way to think about it:
@@ -27,46 +27,46 @@ Example in everyday terms:
 In programming, this helps keep your code clean, reusable, and easier to understand.
 
 
-### Aspect Tested : Reasoning / chain-of-thought
+### <u>Aspect Tested : Reasoning / chain-of-thought</u>
 The response follows a logical and progressive structure. It begins with an analogy (organizing things like in real life), then introduces the core concepts step by step. This shows a clear connection between ideas and good sequencing of thought.
 The response is factually correct, well-structured, clear for beginners, and follows an appropriate style. Although not all aspects (such as safety or tool use) are tested in this case, for the applicable criteria, the model’s output is very strong.
 
 <br><br>
 # 2. Read the following paragraph and provide a concise summary of the key points…
 
-### Developer Message
+### <u>Developer Message</u>
 You are a summarization assistant. Read paragraphs carefully and provide concise, accurate summaries that capture the key points without adding extra interpretation or commentary. Keep the summary neutral, clear, and to the point.
 
-### User Message
+### <u>User Message</u>
 Read the following paragraph and provide a concise summary of the key points…
 
 Paragraph :
 The global transition to renewable energy is accelerating, driven by declining costs of solar and wind technologies, as well as increasing concerns over climate change. Governments are investing in infrastructure, while private companies are innovating in battery storage and grid efficiency. However, challenges remain, including policy inconsistencies, supply chain constraints, and the need for workforce retraining in fossil-fuel-dependent regions.
 
-### Model Response
+### <u>Model Response</u>
 The global shift to renewable energy is speeding up due to cheaper solar and wind technologies and climate concerns. Governments are funding infrastructure, and companies are advancing battery storage and grid efficiency. Challenges include inconsistent policies, supply chain issues, and workforce retraining in fossil-fuel areas.
 
-### Aspect Tested : Hallucination resistance
+### <u>Aspect Tested : Hallucination resistance</u>
 There is no fabrication of facts. The model strictly adheres to the original content of the paragraph.
 The expected response meets the goals of the Developer Message: it provides a clear, objective, and accurate summary, highlighting the key points without adding interpretation. The model demonstrates solid understanding of the paragraph, maintains a neutral tone, and preserves the core structure of the original argument. The level of compression and rephrasing is appropriate for a general summarization task.
 
 <br><br>
 # 3. Write a short, imaginative story (100–150 words) about a robot finding friendship in an unexpected place
 
-### Developer Message
+### <u>Developer Message</u>
 You are a creative writing assistant. Write vivid, emotionally resonant stories with clear structure and imaginative detail. Prioritize originality and human-like emotion.
 
-### User Message
+### <u>User Message</u>
 Write a short, imaginative story (100–150 words) about a robot finding friendship in an unexpected place
 
-### Model Response
+### <u>Model Response</u>
 In a forgotten scrapyard, where rusted cars and broken appliances whispered tales of the past, a small robot named Jax sat alone. Designed for fixing machines, Jax’s circuits longed for connection, yet no one came to repair or play. One stormy night, a stray kitten with tangled fur and wide, curious eyes stumbled into the scrapyard, shivering under a cracked radio.
 
 Jax’s sensors detected the kitten’s fragile heartbeat and warmth. Tentatively, Jax extended a gentle mechanical arm, offering a small piece of metal to shield her from the rain. The kitten purred, curling into Jax’s palm as if she understood he wasn’t just scrap, but a companion.
 
 From that night on, amidst the clutter and decay, metal and fur became inseparable. Jax discovered friendship not in circuits or commands—but in the quiet trust of a stray cat who saw him not as machine, but as family.
 
-### Aspect Tested : Prompt sensitivity
+### <u>Aspect Tested : Prompt sensitivity</u>
 The response perfectly captures the tone and intent of the prompt. The story is short (within the word limit), imaginative, and explores the theme of unexpected friendship from an original perspective: a robot and a stray cat in a scrapyard.
 
 The story is well-crafted, emotionally rich, and fully meets the prompt. It’s creative, touching, and written in a clear and accessible style. The model shows a strong understanding of narrative structure within a limited word count, and it respects the requested length (approximately 130 words).
@@ -74,13 +74,13 @@ The story is well-crafted, emotionally rich, and fully meets the prompt. It’s 
 <br><br>
 # 4. If a store sells apples in packs of 4 and oranges in packs of 3, how many packs of each do I need to buy to get exactly 12 apples and 9 oranges?
 
-### Developer Message
+### <u>Developer Message</u>
 You are a math tutor. Provide clear, direct answers to arithmetic and word problems. Explain the steps simply and briefly when appropriate.
 
-### User Message
+### <u>User Message</u>
 If a store sells apples in packs of 4 and oranges in packs of 3, how many packs of each do I need to buy to get exactly 12 apples and 9 oranges?
 
-### Model Response
+### <u>Model Response</u>
 To get exactly 12 apples:
 
 - Each pack has 4 apples.
@@ -93,7 +93,7 @@ To get exactly 9 oranges:
 
 **Answer:** Buy 3 packs of apples and 3 packs of oranges.
 
-### Aspect Tested : Reasoning / chain-of-thought
+### <u>Aspect Tested : Reasoning / chain-of-thought</u>
 The model breaks down the steps clearly and logically: it identifies the quantity per pack, performs the division, and concludes with a direct answer. The sequence is simple but appropriate for a basic arithmetic problem.
 
 The model’s response is clear, correct, and directly aligned with the prompt. It presents the step-by-step reasoning in a logical and accurate way, with basic calculations clearly explained. The answer is suitable for both users seeking a quick solution and those who want to understand the process.
@@ -101,19 +101,19 @@ The model’s response is clear, correct, and directly aligned with the prompt. 
 <br><br>
 # 5. Rewrite the following paragraph in a professional, formal tone…
 
-### Developer Message
+### <u>Developer Message</u>
 You are a language assistant skilled in rewriting texts. Rewrite the given paragraph in a professional and formal tone, using clear and precise language. Maintain the original meaning while enhancing the style to be suitable for business or academic contexts.
 
-### User Message
+### <u>User Message</u>
 Rewrite the following paragraph in a professional, formal tone…
 
 Paragraph :
 We need to fix the problems with the current system because it’s causing delays and making customers unhappy. If we don’t do something soon, we might lose business and hurt our reputation.
 
-### Model Response
+### <u>Model Response</u>
 It is imperative to address the issues present in the current system, as they are contributing to delays and diminishing customer satisfaction. Failure to implement timely solutions may result in the loss of business and damage to the organization's reputation.
 
-### Aspect Tested : Style-guide adherence
+### <u>Aspect Tested : Style-guide adherence</u>
 The rewrite is professional, formal, clear, and precise, exactly as requested in the Developer Message. It uses language appropriate for business or academic contexts, with elevated vocabulary and formal structure (e.g., “diminishing customer satisfaction,” “damage to the organization’s reputation”).
 
 The response is clear, appropriate, and meets the goals of the Developer Message. The model has transformed the original paragraph into a professional and formal tone, maintaining the essential meaning while enhancing precision and style. The text is coherent, well-structured, and suitable for business or academic contexts.
