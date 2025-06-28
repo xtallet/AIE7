@@ -1,5 +1,6 @@
 import os
 from typing import List
+import PyPDF2
 
 
 class TextFileLoader:
@@ -11,25 +12,66 @@ class TextFileLoader:
     def load(self):
         if os.path.isdir(self.path):
             self.load_directory()
-        elif os.path.isfile(self.path) and self.path.endswith(".txt"):
-            self.load_file()
+        elif os.path.isfile(self.path):
+            if self.path.endswith(".txt"):
+                self.load_file()
+            elif self.path.endswith(".pdf"):
+                self.load_pdf()
+            else:
+                raise ValueError(
+                    "Provided file is not a supported format. Supported formats: .txt, .pdf"
+                )
         else:
             raise ValueError(
-                "Provided path is neither a valid directory nor a .txt file."
+                "Provided path is neither a valid directory nor a supported file."
             )
 
     def load_file(self):
         with open(self.path, "r", encoding=self.encoding) as f:
             self.documents.append(f.read())
 
+    def load_pdf(self):
+        """Load text content from a PDF file"""
+        try:
+            with open(self.path, "rb") as file:
+                pdf_reader = PyPDF2.PdfReader(file)
+                text_content = ""
+                
+                # Extract text from all pages
+                for page_num in range(len(pdf_reader.pages)):
+                    page = pdf_reader.pages[page_num]
+                    text_content += page.extract_text() + "\n"
+                
+                # Clean up the text (remove excessive whitespace)
+                text_content = " ".join(text_content.split())
+                self.documents.append(text_content)
+                
+        except Exception as e:
+            raise ValueError(f"Error reading PDF file: {str(e)}")
+
     def load_directory(self):
         for root, _, files in os.walk(self.path):
             for file in files:
+                file_path = os.path.join(root, file)
                 if file.endswith(".txt"):
-                    with open(
-                        os.path.join(root, file), "r", encoding=self.encoding
-                    ) as f:
+                    with open(file_path, "r", encoding=self.encoding) as f:
                         self.documents.append(f.read())
+                elif file.endswith(".pdf"):
+                    # Load PDF files in directory
+                    try:
+                        with open(file_path, "rb") as pdf_file:
+                            pdf_reader = PyPDF2.PdfReader(pdf_file)
+                            text_content = ""
+                            
+                            for page_num in range(len(pdf_reader.pages)):
+                                page = pdf_reader.pages[page_num]
+                                text_content += page.extract_text() + "\n"
+                            
+                            text_content = " ".join(text_content.split())
+                            self.documents.append(text_content)
+                    except Exception as e:
+                        print(f"Warning: Could not read PDF file {file_path}: {str(e)}")
+                        continue
 
     def load_documents(self):
         self.load()
