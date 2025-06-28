@@ -1,0 +1,34 @@
+
+    ┌─────────────────────────────────────────────────────────────────────────────┐
+    │                    RAG (Retrieval Augmented Generation) Process              │
+    └─────────────────────────────────────────────────────────────────────────────┘
+
+    📄 DOCUMENT PROCESSING PHASE
+    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────────────┐
+    │  1. Load    │───▶│  2. Split   │───▶│  3. Embed   │───▶│  4. Store in Vector │
+    │ Documents   │    │   Text      │    │   Text      │    │   Database          │
+    │ (PDF/TXT)   │    │   Chunks    │    │   Vectors   │    │   + Metadata        │
+    └─────────────┘    └─────────────┘    └─────────────┘    └─────────────────────┘
+                                                                    │
+                                                                    ▼
+    🔍 QUERY PROCESSING PHASE
+    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────────────┐
+    │  5. User    │───▶│  6. Embed   │───▶│  7. Search  │───▶│  8. Retrieve        │
+    │   Query     │    │   Query     │    │  Similar    │    │   Relevant          │
+    │             │    │   Vector    │    │  Vectors    │    │   Context           │
+    └─────────────┘    └─────────────┘    └─────────────┘    └─────────────────────┘
+                                                                    │
+                                                                    ▼
+    🤖 GENERATION PHASE
+    ┌─────────────────────────────────────────────────────────────────────────────┐
+    │  9. LLM Generation                                                          │
+    │  Context + Query → Answer                                                   │
+    │  (Using Chain-of-Thought prompting for detailed responses)                 │
+    └─────────────────────────────────────────────────────────────────────────────┘
+
+    🔧 ENHANCEMENTS IMPLEMENTED:
+    • PDF Support (PyPDF2 integration)
+    • Multiple Distance Metrics (Cosine + Euclidean)
+    • Metadata Support (chunk_id, source_file, chunk_size, etc.)
+    • Enhanced Prompting Strategies (Chain-of-Thought)
+    
