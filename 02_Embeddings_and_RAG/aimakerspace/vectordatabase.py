@@ -24,16 +24,26 @@ class VectorDatabase:
         self.entries = [] 
         self.embedding_model = embedding_model or EmbeddingModel()
 
+    
+
+    ##### ✅ ORIGINAL INSERT CODE COMMENTED OUT
     #def insert(self, key: str, vector: np.array) -> None:
     #    self.vectors[key] = vector
 
-    def insert(self, text: str, vector: np.array, metadata: dict = None) -> None:
+    ##### 🏗️ XTALLET INSERT CODE TO ADD METADATA SUPPORT TO VECTOR DATABASE
+    def insert(self, 
+               text: str, 
+               vector: np.array, 
+               metadata: dict = None) -> None:
         self.entries.append({
             "text": text,
             "vector": vector,
             "metadata": metadata or {}
         })
 
+
+
+    ##### ✅ ORIGINAL SEARCH CODE COMMENTED OUT
     #def search(
     #    self,
     #    query_vector: np.array,
@@ -46,6 +56,7 @@ class VectorDatabase:
     #    ]
     #    return sorted(scores, key=lambda x: x[1], reverse=True)[:k]
 
+    ##### 🏗️ XTALLET SEARCH CODE TO ADD METADATA SUPPORT TO VECTOR DATABASE
     def search(self, query_vector: np.array, k: int, distance_measure: Callable = cosine_similarity) -> List[Tuple[str, dict, float]]:
         scored = [
             (entry["text"], entry["metadata"], distance_measure(query_vector, entry["vector"]))
@@ -53,6 +64,9 @@ class VectorDatabase:
         ]
         return sorted(scored, key=lambda x: x[2], reverse=True)[:k]
 
+
+
+    ##### ✅ ORIGINAL SEARCH BY TEXT CODE COMMENTED OUT
     #def search_by_text(
     #    self,
     #    query_text: str,
@@ -64,6 +78,8 @@ class VectorDatabase:
     #    results = self.search(query_vector, k, distance_measure)
     #    return [result[0] for result in results] if return_as_text else results
 
+
+    ##### 🏗️ XTALLET SEARCH BY TEXT CODE TO ADD METADATA SUPPORT TO VECTOR DATABASE
     def search_by_text(self, query_text: str, k: int, distance_measure: Callable = cosine_similarity, return_as_text: bool = False) -> List[Tuple[str, dict, float]]:
         query_vector = self.embedding_model.get_embedding(query_text)
         results = self.search(query_vector, k, distance_measure)
@@ -72,12 +88,17 @@ class VectorDatabase:
     def retrieve_from_key(self, key: str) -> np.array:
         return self.vectors.get(key, None)
 
+
+
+    ##### ✅ ORIGINAL ABUILD FROM LIST CODE COMMENTED OUT
     #async def abuild_from_list(self, list_of_text: List[str]) -> "VectorDatabase":
     #    embeddings = await self.embedding_model.async_get_embeddings(list_of_text)
     #    for text, embedding in zip(list_of_text, embeddings):
     #        self.insert(text, np.array(embedding))
     #    return
     #  self
+
+    ##### 🏗️ XTALLET ABUILD FROM LIST CODE TO ADD METADATA SUPPORT TO VECTOR DATABASE
     async def abuild_from_list(self, list_of_text: List[str], list_of_metadata: List[dict] = None) -> "VectorDatabase":
         print(f'list of metadata is : {list_of_metadata}')
         embeddings = await self.embedding_model.async_get_embeddings(list_of_text)

@@ -1,6 +1,6 @@
 import os
 from typing import List
-import PyPDF2
+import PyPDF2 ##### 🏗️ XTALLET NEW IMPORT ADDED TO LOAD PDF FILE
 
 
 class TextFileLoader:
@@ -15,7 +15,7 @@ class TextFileLoader:
         elif os.path.isfile(self.path):
             if self.path.endswith(".txt"):
                 self.load_file()
-            elif self.path.endswith(".pdf"):
+            elif self.path.endswith(".pdf"): ##### 🏗️ XTALLET NEW CODE ADDED TO LOAD PDF FILE
                 self.load_pdf()
             else:
                 raise ValueError(
@@ -30,6 +30,8 @@ class TextFileLoader:
         with open(self.path, "r", encoding=self.encoding) as f:
             self.documents.append(f.read())
 
+    
+    ##### 🏗️ XTALLET NEW CODE ADDED TO LOAD PDF FILE
     def load_pdf(self):
         """Load text content from a PDF file"""
         try:
@@ -59,11 +61,11 @@ class TextFileLoader:
                 elif file.endswith(".pdf"):
                     # Load PDF files in directory
                     try:
-                        with open(file_path, "rb") as pdf_file:
+                        with open(file_path, "rb") as pdf_file: ##### 🏗️ XTALLET NEW CODE ADDED TO LOAD PDF FILE
                             pdf_reader = PyPDF2.PdfReader(pdf_file)
                             text_content = ""
                             
-                            for page_num in range(len(pdf_reader.pages)):
+                            for page_num in range(len(pdf_reader.pages)): ##### 🏗️ XTALLET NEW CODE ADDED TO LOAD PDF FILE
                                 page = pdf_reader.pages[page_num]
                                 text_content += page.extract_text() + "\n"
                             
