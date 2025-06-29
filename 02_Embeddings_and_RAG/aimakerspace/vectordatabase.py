@@ -13,6 +13,7 @@ def cosine_similarity(vector_a: np.array, vector_b: np.array) -> float:
     return dot_product / (norm_a * norm_b)
 
 
+##### 🏗️ XTALLET EUCLIDEAN DISTANCE FUNCTION ADDED
 def euclidean_distance(vector_a: np.array, vector_b: np.array) -> float:
     """Computes the negative Euclidean distance between two vectors (higher = more similar)."""
     return np.linalg.norm(vector_a - vector_b)
