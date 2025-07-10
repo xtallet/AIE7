@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+langchain-community
+langchain-openai
+langgraph
+aiofiles
+wikipedia
+arxiv
+langchain-tavily
