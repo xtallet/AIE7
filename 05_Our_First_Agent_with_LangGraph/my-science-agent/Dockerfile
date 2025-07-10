@@ -12,7 +12,7 @@ WORKDIR /app
 
 # Copia los requirements y el código backend
 COPY backend/ ./backend/
-COPY my-science-agent/backend/requirements.txt ./backend/requirements.txt
+COPY backend/requirements.txt ./backend/requirements.txt
 
 # Instala dependencias del backend
 RUN pip install --upgrade pip \

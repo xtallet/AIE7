@@ -3,6 +3,9 @@
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  min-height: 100vh;
+  background: url('/app-wllp.png?v=2') no-repeat center center fixed;
+  background-size: cover;
 }
 
 .logo {
