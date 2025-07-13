@@ -1,0 +1,5 @@
+1. Introduction to transformer models in NLP
+2. Natural Language Interfaces for Databases: Survey by Mengyi Liu and Jianqiu Xu
+3. Curriculum Learning for Language Models: Research by Daniel Campos
+4. Named Entity Recognition in Low-Resource Languages: Study by Ridewaan Hanslo
+5. Concluding thoughts on the advancements and future of transformer models in NLP

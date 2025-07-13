@@ -1,0 +1,17 @@
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+langchain==0.3.26
+langchain-openai==0.3.27
+langchain-community==0.3.27
+langchain-core==0.3.68
+langchain-experimental==0.3.4
+langgraph==0.5.2
+openai==1.10.0
+pydantic==2.7.4
+python-multipart==0.0.6
+aiofiles==23.2.1
+nest-asyncio==1.5.8
+ipython==8.18.1
+requests==2.32.4
+tenacity==8.5.0
+arxiv==2.2.0 
