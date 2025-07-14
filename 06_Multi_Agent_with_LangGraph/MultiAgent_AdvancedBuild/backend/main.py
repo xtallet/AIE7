@@ -255,7 +255,7 @@ def get_research_graph():
 import nest_asyncio
 nest_asyncio.apply()
 
-from IPython.display import Image, display
+# from IPython.display import Image, display
 from langchain_core.runnables.graph import CurveStyle, MermaidDrawMethod, NodeStyles
 
 # display(
@@ -291,11 +291,12 @@ import uuid
 import os
 from langchain_core.tools import tool
 
-os.makedirs('./content/advanced_build/data', exist_ok=True)
+BASE_DATA_DIR = '/tmp/advanced_build/data'
+os.makedirs(BASE_DATA_DIR, exist_ok=True)
 
 def create_random_subdirectory():
     random_id = str(uuid.uuid4())[:8]  # Use first 8 characters of a UUID
-    subdirectory_path = os.path.join('./content/advanced_build/data', random_id)
+    subdirectory_path = os.path.join(BASE_DATA_DIR, random_id)
     os.makedirs(subdirectory_path, exist_ok=True)
     return subdirectory_path
 
@@ -501,7 +502,7 @@ def get_authoring_graph():
     return authoring_graph.compile()
 
 # Display the Graph
-from IPython.display import Image, display
+# from IPython.display import Image, display
 
 # display(
 #     Image(
@@ -749,3 +750,190 @@ def get_simple_graph():
 # Let's harness the power of AI to create a future where language barriers are a thing of the past! 🤝🌐
 #
 # #MachineLearning #AI #Transformers #NaturalLanguageProcessing #Research #DataScience #Inclusion #Innovation 
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import RedirectResponse
+from sse_starlette.sse import EventSourceResponse
+from fastapi import Request
+from fastapi.responses import StreamingResponse
+import json
+from fastapi import Body
+from pydantic import BaseModel
+import sys
+import io
+from typing import List
+
+app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+# Montar los archivos estáticos en /static para no sobrescribir rutas de API
+app.mount("/static", StaticFiles(directory="backend/static", html=True), name="static-root")
+
+from fastapi.responses import FileResponse
+
+@app.get("/")
+def root():
+    return FileResponse("backend/static/index.html")
+
+async def stream_log_generator(question: str, api_key: str):
+    try:
+        openai_key = api_key or os.environ.get("OPENAI_API_KEY")
+        if not openai_key:
+            yield f"data: {json.dumps({'type': 'error', 'message': '❌ OpenAI API key is required. Please provide it in the frontend or set OPENAI_API_KEY environment variable.'})}\n\n"
+            return
+        os.environ["OPENAI_API_KEY"] = openai_key
+        compiled_super_graph = get_compiled_super_graph()
+        answer = None
+        response_team_completed = False
+        yield f"data: {json.dumps({'type': 'start', 'message': f'🚀 Starting processing of: {question}'})}\n\n"
+        try:
+            async for chunk in compiled_super_graph.astream(
+                {"messages": [HumanMessage(content=question)], "next": ""},
+                {"recursion_limit": 30},
+            ):
+                yield f"data: {json.dumps({'type': 'chunk', 'data': str(chunk)})}\n\n"
+                for node, values in chunk.items():
+                    node_info = {
+                        'type': 'node',
+                        'node': node,
+                        'values': str(values)
+                    }
+                    yield f"data: {json.dumps(node_info)}\n\n"
+                    if node == "Response team":
+                        if not response_team_completed:
+                            yield f"data: {json.dumps({'type': 'info', 'message': '🔄 Response team starting...'})}\n\n"
+                        if "messages" in values:
+                            last_msg = values["messages"][-1]
+                            if hasattr(last_msg, "content"):
+                                content = last_msg.content
+                                has_emojis = any(emoji in content for emoji in ["🚀", "💡", "📊", "🌟", "✅", "🤖"])
+                                has_hashtags = "#" in content
+                                has_linkedin_format = any(keyword in content.lower() for keyword in ["linkedin", "post", "share", "thoughts", "game changer", "innovation", "let's discuss", "what are your thoughts"])
+                                if has_emojis and has_hashtags and has_linkedin_format and "saved as" not in content.lower():
+                                    answer = content
+                                    response_team_completed = True
+                                    yield f"data: {json.dumps({'type': 'answer', 'content': answer})}\n\n"
+                                    yield f"data: {json.dumps({'type': 'info', 'message': '✅ Response team completed - LinkedIn post generated!'})}\n\n"
+                                    yield f"data: {json.dumps({'type': 'info', 'message': '🏁 Finalizing execution...'})}\n\n"
+                                elif "saved as" in content.lower() or "outline" in content.lower():
+                                    yield f"data: {json.dumps({'type': 'info', 'message': '📝 Response team working on content...'})}\n\n"
+                                else:
+                                    yield f"data: {json.dumps({'type': 'info', 'message': '🔍 Processing research content...'})}\n\n"
+                    if node == "supervisor" and "next" in values:
+                        if values["next"] == "FINISH":
+                            yield f"data: {json.dumps({'type': 'info', 'message': '✅ Supervisor detected completion - finishing execution'})}\n\n"
+                            break
+            yield f"data: {json.dumps({'type': 'end', 'message': '🏁 Processing completed'})}\n\n"
+        except Exception as e:
+            error_msg = str(e)
+            if "APIError" in error_msg or "server had an error" in error_msg.lower():
+                yield f"data: {json.dumps({'type': 'error', 'message': '⚠️ Temporary OpenAI API error. Please try again in a few moments.'})}\n\n"
+            else:
+                yield f"data: {json.dumps({'type': 'error', 'message': f'❌ Error during processing: {error_msg}'})}\n\n"
+    except Exception as e:
+        import traceback
+        error_info = {
+            'type': 'error',
+            'message': str(e),
+            'traceback': traceback.format_exc()
+        }
+        yield f"data: {json.dumps(error_info)}\n\n"
+
+@app.get("/stream-ask")
+async def stream_ask(question: str, api_key: str):
+    """Endpoint de streaming para ver el progreso en tiempo real."""
+    return StreamingResponse(
+        stream_log_generator(question, api_key),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "*",
+        }
+    ) 
+
+class AskRequest(BaseModel):
+    question: str
+    api_key: str
+
+class AskResponse(BaseModel):
+    answer: str
+    log: List[str]
+
+@app.post("/ask", response_model=AskResponse)
+async def ask(request: AskRequest):
+    # Redirigir stdout para capturar el log
+    log_stream = io.StringIO()
+    sys_stdout = sys.stdout
+    sys.stdout = log_stream
+    try:
+        openai_key = request.api_key or os.environ.get("OPENAI_API_KEY")
+        if not openai_key:
+            return AskResponse(
+                answer="❌ OpenAI API key is required. Please provide it in the frontend or set OPENAI_API_KEY environment variable.",
+                log=["Error: No OpenAI API key provided"]
+            )
+        os.environ["OPENAI_API_KEY"] = openai_key
+        compiled_super_graph = get_compiled_super_graph()
+        answer = None
+        log_lines = []
+        response_team_completed = False
+        print(f"🚀 Starting full processing of: {request.question}")
+        print("=" * 50)
+        async for chunk in compiled_super_graph.astream(
+            {"messages": [HumanMessage(content=request.question)], "next": ""},
+            {"recursion_limit": 30},
+        ):
+            print(f'📦 Chunk received: {chunk}')
+            for node, values in chunk.items():
+                print(f'🔄 Node: {node}')
+                print(f'📊 Values: {values}')
+                print(f"⏳ Processing node: '{node}'")
+                if "messages" in values:
+                    print("💬 Messages:")
+                    for msg in values["messages"]:
+                        if hasattr(msg, 'content'):
+                            print(f"  - {msg.content[:100]}...")
+                        else:
+                            print(f"  - {str(msg)[:100]}...")
+                else:
+                    print(f"⚠️  No messages in: {values}")
+                print("-" * 30)
+                if node == "Response team" and "messages" in values:
+                    last_msg = values["messages"][-1]
+                    if hasattr(last_msg, 'content'):
+                        content = last_msg.content
+                        has_emojis = any(emoji in content for emoji in ["🚀", "💡", "📊", "🌟", "✅", "🤖"])
+                        has_hashtags = "#" in content
+                        has_linkedin_format = any(keyword in content.lower() for keyword in ["linkedin", "post", "share", "thoughts", "game changer", "innovation", "let's discuss", "what are your thoughts"])
+                        if has_emojis and has_hashtags and has_linkedin_format and "saved as" not in content.lower():
+                            answer = content
+                            response_team_completed = True
+                            print(f"✅ Final answer captured: {answer[:100]}...")
+                            print("✅ Response team completed - LinkedIn post generated!")
+                        elif "saved as" in content.lower() or "outline" in content.lower():
+                            print("📝 Response team working on content...")
+                        else:
+                            print("🔍 Processing research content...")
+                if node == "supervisor" and "next" in values:
+                    if values["next"] == "FINISH":
+                        print("✅ Supervisor detected completion - finishing execution")
+                        break
+        print("🏁 Processing completed")
+        sys.stdout = sys_stdout
+        log_stream.seek(0)
+        log_lines = log_stream.read().splitlines()
+        return AskResponse(answer=answer or "No answer generated", log=log_lines)
+    except Exception as e:
+        sys.stdout = sys_stdout
+        import traceback
+        error_details = f"Error: {str(e)}\nTraceback:\n{traceback.format_exc()}"
+        return AskResponse(answer=error_details, log=log_stream.getvalue().splitlines()) 

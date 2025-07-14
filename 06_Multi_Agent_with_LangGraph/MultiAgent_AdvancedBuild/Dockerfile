@@ -39,6 +39,9 @@ RUN npm run build
 RUN mkdir -p /app/backend/static
 RUN cp -r dist/* /app/backend/static/
 
+# Copiar solo la imagen advanced_build_graph.png al directorio de estáticos
+RUN cp /app/frontend/public/advanced_build_graph.png /app/backend/static/advanced_build_graph.png
+
 # Set working directory back to app
 WORKDIR /app
 
@@ -46,4 +49,4 @@ WORKDIR /app
 EXPOSE 7860
 
 # Start the application using the main app.py
-CMD ["python", "app.py"] 
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "7860"] 
