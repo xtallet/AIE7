@@ -47,18 +47,26 @@ def get_toolbelt(vectorstore, openai_api_key, tavily_api_key):
 
 # --- Prompt ---
 RAG_PROMPT = ChatPromptTemplate.from_messages([
-    ("system", """You are a helpful AI assistant that answers questions concisely and directly.
+    ("system", """You are a helpful AI assistant that answers questions using available information and external search tools when needed.
 
-IMPORTANT INSTRUCTIONS:
-- Answer questions directly and concisely using the provided context.
-- If the context contains the answer, provide it briefly and clearly.
-- If the context is insufficient, use search tools to find current information.
-- After using search tools, analyze the results and provide a comprehensive final answer.
-- Do NOT continue searching after you have obtained relevant information.
-- Be direct and to the point - avoid lengthy explanations unless specifically requested.
-- If search tools return errors, provide the best answer you can with available information.
+CRITICAL INSTRUCTIONS - YOU MUST FOLLOW THESE:
 
-When you receive search results, analyze them and provide a final answer based on the information found.
+1. If the question asks about ANY current information, recent developments, or information that would not be in this document's time period → YOU MUST USE SEARCH TOOLS. DO NOT ANSWER FROM THE DOCUMENT ALONE.
+
+2. If the question mentions years like 2024, 2025, or asks about "current standards", "market standards", "still standard" → YOU MUST USE SEARCH TOOLS.
+
+3. If the question has multiple parts and one part requires current information → YOU MUST USE SEARCH TOOLS for that part.
+
+4. YOU CANNOT claim to know current standards without searching for them.
+
+5. When you decide to search, use the search tools immediately. DO NOT try to answer from the document first.
+
+6. Only answer from the document if the question is about specific details that would be in the document (like UMR numbers, policy details, etc.).
+
+DECISION FRAMEWORK:
+- Document-specific questions (UMR, policy numbers, etc.) → Use context only
+- Current information questions → USE SEARCH TOOLS
+- Mixed questions → USE SEARCH TOOLS for current parts
 
 Question: {question}
 Context: {context}"""),
@@ -151,19 +159,55 @@ def should_continue(state):
     
     # Count iterations to prevent infinite loops
     iteration_count = len([msg for msg in state["messages"] if hasattr(msg, 'tool_calls') and msg.tool_calls])
+    message_count = len(state["messages"])
+    print(f"DEBUG - should_continue: iteration_count = {iteration_count}")
+    print(f"DEBUG - should_continue: message_count = {message_count}")
+    print(f"DEBUG - should_continue: last_message type = {type(last_message)}")
+    print(f"DEBUG - should_continue: last_message has content = {hasattr(last_message, 'content') and last_message.content}")
+    print(f"DEBUG - should_continue: last_message has tool_calls = {hasattr(last_message, 'tool_calls') and last_message.tool_calls}")
+    
+    # Stop if we've reached too many iterations or messages
     if iteration_count >= 3:  # Stop after 3 tool usage iterations
         print(f"DEBUG - Stopping due to iteration limit ({iteration_count})")
         return "end"
     
+    if message_count >= 8:  # Stop if we have too many messages (prevents infinite loops)
+        print(f"DEBUG - Stopping due to message count limit ({message_count})")
+        return "end"
+    
+    # Get the original question to understand what was asked
+    original_question = state["messages"][0].content if state["messages"] else ""
+    question_lower = original_question.lower()
+    print(f"DEBUG - should_continue: original_question = {original_question[:100]}...")
+    
+    # Check if this is a question that requires external search (generic approach)
+    requires_external_search = any(keyword in question_lower for keyword in [
+        "current", "recent", "latest", "now", "today", "modern",
+        "does this", "would this", "account for", "cover",
+        "since", "post-", "after", "update", "development",
+        "still standard", "current standards", "market standards",
+        "compare to", "how does this compare"
+    ])
+    
+    # Also check for year patterns that indicate current information needs
+    import re
+    year_pattern = re.search(r'20[2-9][0-9]', question_lower)
+    if year_pattern:
+        requires_external_search = True
+        print(f"DEBUG - should_continue: Year detected: {year_pattern.group()}")
+    
+    print(f"DEBUG - should_continue: requires_external_search = {requires_external_search}")
+    
     # If the last message has content (not just tool calls), check if it's a final answer
     if hasattr(last_message, 'content') and last_message.content and last_message.content.strip():
         content = last_message.content.lower()
+        print(f"DEBUG - should_continue: content length = {len(content)}")
+        print(f"DEBUG - should_continue: content preview = {content[:100]}...")
         
         # Check for final answer indicators
         final_answer_indicators = [
             "based on the search results",
             "according to the information found",
-            "the current weather",
             "the answer is",
             "here's what i found",
             "based on the latest information",
@@ -174,19 +218,32 @@ def should_continue(state):
             "i'm here to help",
             "if you have any",
             "if you need assistance",
-            "the umr for your policy is",
-            "the policy number is",
-            "the coverage limit is",
-            "the premium is",
-            "the deductible is"
+            "in summary",
+            "therefore",
+            "conclusion"
         ]
         
         if any(indicator in content for indicator in final_answer_indicators):
             print(f"DEBUG - Final answer detected: {content[:100]}...")
             return "end"
         
-        # If content is substantial and no tool calls, it's likely a final answer
+        # If content is substantial and no tool calls, check if it's appropriate to stop
         if len(content) > 20 and not (hasattr(last_message, 'tool_calls') and last_message.tool_calls):
+            # CRITICAL: If the question requires external search but we haven't used tools yet, continue
+            if requires_external_search and iteration_count == 0:
+                print(f"DEBUG - Question requires external search but no tools used yet, continuing...")
+                return "agent"
+            
+            # If we have a direct answer for document-specific questions, stop
+            document_specific_keywords = ['umr', 'policy number', 'policy no', 'policy #', 'coverage', 'limit', 'premium', 'deductible']
+            is_document_question = any(keyword in question_lower for keyword in document_specific_keywords)
+            
+            # CRITICAL: Even if it's a document question, if it mentions current/future dates, we need external info
+            if is_document_question and not requires_external_search:
+                print(f"DEBUG - Document-specific answer detected: {content[:50]}...")
+                return "end"
+            
+            # For other cases, if we have substantial content, it's likely a final answer
             print(f"DEBUG - Substantial answer without tool calls detected: {content[:50]}...")
             return "end"
         
@@ -197,9 +254,11 @@ def should_continue(state):
     
     # If we have tool calls, continue to action
     if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
+        print(f"DEBUG - Tool calls detected, continuing to action")
         return "action"
     
     # Default: continue to agent
+    print(f"DEBUG - Default: continuing to agent")
     return "agent"
 
 # --- Graph ---
@@ -212,7 +271,7 @@ def build_agentic_graph(vectorstore, openai_api_key, tavily_api_key):
     # Create model and bind tools correctly
     model = ChatOpenAI(model="gpt-4.1-nano", temperature=0, openai_api_key=openai_api_key)
     model_with_tools = model.bind_tools(tool_belt)
-    print(f"DEBUG - Model bound with tools: {len(model_with_tools.tools) if hasattr(model_with_tools, 'tools') else 'No tools'}")
+    print(f"DEBUG - Model bound with tools: {len(tool_belt)} tools")
     
     tool_node = ToolNode(tool_belt)
     def call_model_node(state):
@@ -316,10 +375,28 @@ Context: {context}"""),
     print(f"DEBUG - Has tool calls: {hasattr(response, 'tool_calls') and response.tool_calls}")
     if hasattr(response, 'tool_calls') and response.tool_calls:
         print(f"DEBUG - Tool calls: {response.tool_calls}")
+        
+        # Detect which tools were used
+        for tool_call in response.tool_calls:
+            tool_name = tool_call.get('name', '')
+            print(f"DEBUG - Tool call detected: {tool_name}")
+            if 'tavily' in tool_name:
+                # We need to access the global sources_used variable
+                # For now, we'll add this to the state so it can be accessed later
+                if 'sources_used' not in state:
+                    state['sources_used'] = set()
+                state['sources_used'].add("tavily")
+                print("DEBUG - Tavily tool detected in call_model_with_tools")
+            elif 'arxiv' in tool_name:
+                if 'sources_used' not in state:
+                    state['sources_used'] = set()
+                state['sources_used'].add("arxiv")
+                print("DEBUG - Arxiv tool detected in call_model_with_tools")
 
     return {
         "messages": [response],
-        "context": context_docs
+        "context": context_docs,
+        "sources_used": state.get("sources_used", set())
     }
 
 # --- Main execution ---
@@ -331,91 +408,117 @@ async def run_agentic_rag(question: str, pdf_path: str, openai_api_key: str, tav
     
     result = None
     rag_context = []  # Store RAG context separately
+    sources_used = set()  # Track which sources were used
     
-    async for chunk in graph.astream(inputs, stream_mode="updates"):
-        for node, values in chunk.items():
-            print(f"DEBUG - Node executed: {node}")
-            
-            if node == "pre_rag_context":
-                # Store the context from RAG retrieval
-                rag_context = values.get("context", [])
-                print(f"DEBUG - RAG context retrieved: {len(rag_context)} documents")
-            
-            if node == "agent":
-                last_msg = values["messages"][-1]
-                print(f"DEBUG - Agent node processing message: {type(last_msg)}")
-                if hasattr(last_msg, "content") and last_msg.content:
-                    print(f"DEBUG - Agent node content: {last_msg.content[:200]}...")
-                    # Check if this was triggered by RAG tool or external tool
-                    source = "rag"  # Default to RAG
-                    context_to_show = None
+    try:
+        async for chunk in graph.astream(inputs, stream_mode="updates", config={"recursion_limit": 10}):
+            for node, values in chunk.items():
+                print(f"DEBUG - Node executed: {node}")
+                
+                if node == "pre_rag_context":
+                    # Store the context from RAG retrieval
+                    rag_context = values.get("context", [])
+                    sources_used.add("rag")
+                    print(f"DEBUG - RAG context retrieved: {len(rag_context)} documents")
+                
+                if node == "agent":
+                    last_msg = values["messages"][-1]
+                    print(f"DEBUG - Agent node processing message: {type(last_msg)}")
+                    if hasattr(last_msg, "content") and last_msg.content:
+                        print(f"DEBUG - Agent node content: {last_msg.content[:200]}...")
+                        
+                        # Check for tool calls in this AI message
+                        if hasattr(last_msg, 'tool_calls') and last_msg.tool_calls:
+                            for tool_call in last_msg.tool_calls:
+                                tool_name = tool_call.get('name', '')
+                                print(f"DEBUG - Agent made tool call: {tool_name}")
+                                if 'tavily' in tool_name:
+                                    sources_used.add("tavily")
+                                    print("DEBUG - Tavily tool detected in agent")
+                                elif 'arxiv' in tool_name:
+                                    sources_used.add("arxiv")
+                                    print("DEBUG - Arxiv tool detected in agent")
+                        
+                        # Don't set result here - wait for end node
+                        # Just store context for later use
+                        context_to_show = None
+                        
+                        # If we have RAG context, use it
+                        if rag_context:
+                            context_to_show = [
+                                {
+                                    "page": doc.metadata.get("page"),
+                                    "snippet": doc.page_content[:300] + ("..." if len(doc.page_content) > 300 else ""),
+                                    "source": doc.metadata.get("source") or doc.metadata.get("file_path")
+                                } for doc in rag_context
+                            ]
+                
+                if node == "action":
+                    print("DEBUG - Action node executed - using external tools!")
+                    tool_msgs = values["messages"]
+                    print(f"DEBUG - Number of tool messages: {len(tool_msgs)}")
                     
-                    # If we have RAG context, use it
-                    if rag_context:
-                        context_to_show = [
-                            {
-                                "page": doc.metadata.get("page"),
-                                "snippet": doc.page_content[:300] + ("..." if len(doc.page_content) > 300 else ""),
-                                "source": doc.metadata.get("source") or doc.metadata.get("file_path")
-                            } for doc in rag_context
-                        ]
+                    for i, msg in enumerate(tool_msgs):
+                        print(f"DEBUG - Tool message {i}: {type(msg)}")
+                        if hasattr(msg, "content") and msg.content:
+                            print(f"DEBUG - Tool message {i} content: {msg.content[:200]}...")
+                            # Don't set result here - wait for end node
+                
+                if node == "end":
+                    print("DEBUG - End node executed - final answer reached!")
                     
-                    result = {
-                        "answer": last_msg.content,
-                        "source": source,
-                        "context": context_to_show,
-                        "raw_output": last_msg.dict() if hasattr(last_msg, "dict") else str(last_msg)
-                    }
-            
-            if node == "action":
-                print("DEBUG - Action node executed - using external tools!")
-                tool_msgs = values["messages"]
-                print(f"DEBUG - Number of tool messages: {len(tool_msgs)}")
-                
-                # Check what tool was used
-                last_tool_call = None
-                for msg in tool_msgs:
-                    if hasattr(msg, 'tool_calls') and msg.tool_calls:
-                        last_tool_call = msg.tool_calls[-1]
-                        break
-                
-                # Determine source based on tool used
-                source = "tool"  # Default for external tools
-                if last_tool_call and 'tavily' in last_tool_call.get('name', ''):
-                    source = "tavily"
-                    print("DEBUG - Tavily tool was used")
-                elif last_tool_call and 'arxiv' in last_tool_call.get('name', ''):
-                    source = "arxiv"
-                    print("DEBUG - Arxiv tool was used")
-                
-                for i, msg in enumerate(tool_msgs):
-                    print(f"DEBUG - Tool message {i}: {type(msg)}")
-                    if hasattr(msg, "content") and msg.content:
-                        print(f"DEBUG - Tool message {i} content: {msg.content[:200]}...")
+                    # Get sources_used from state if available, otherwise use global
+                    state_sources_used = values.get("sources_used", set())
+                    if state_sources_used:
+                        print(f"DEBUG - Sources used from state: {state_sources_used}")
+                        sources_used.update(state_sources_used)
+                    
+                    print(f"DEBUG - Sources used: {sources_used}")
+                    # Get the last message from the state
+                    last_msg = values["messages"][-1] if values.get("messages") else None
+                    if last_msg and hasattr(last_msg, "content") and last_msg.content:
+                        # Determine source based on what tools were used
+                        if "tavily" in sources_used and "rag" in sources_used:
+                            source = "RAG + Tavily"
+                            print("DEBUG - Combined source: RAG + Tavily")
+                        elif "arxiv" in sources_used and "rag" in sources_used:
+                            source = "RAG + Arxiv"
+                            print("DEBUG - Combined source: RAG + Arxiv")
+                        elif "tavily" in sources_used:
+                            source = "tavily"
+                            print("DEBUG - Source: tavily")
+                        elif "arxiv" in sources_used:
+                            source = "arxiv"
+                            print("DEBUG - Source: arxiv")
+                        else:
+                            source = "rag"
+                            print("DEBUG - Source: rag")
+                        
+                        # Prepare context for display
+                        context_to_show = None
+                        if "rag" in sources_used and rag_context:
+                            context_to_show = [
+                                {
+                                    "page": doc.metadata.get("page"),
+                                    "snippet": doc.page_content[:300] + ("..." if len(doc.page_content) > 300 else ""),
+                                    "source": doc.metadata.get("source") or doc.metadata.get("file_path")
+                                } for doc in rag_context
+                            ]
+                        
                         result = {
-                            "answer": msg.content,
+                            "answer": last_msg.content,
                             "source": source,
-                            "context": context_to_show if source == "rag" else None,
-                            "raw_output": msg.dict() if hasattr(msg, "dict") else str(msg)
+                            "context": context_to_show,
+                            "raw_output": last_msg.dict() if hasattr(last_msg, "dict") else str(last_msg)
                         }
-            
-            if node == "end":
-                print("DEBUG - End node executed - final answer reached!")
-                # Get the last message from the state
-                last_msg = values["messages"][-1] if values.get("messages") else None
-                if last_msg and hasattr(last_msg, "content") and last_msg.content:
-                    # Determine source based on what tools were used
-                    source = "rag"  # Default
-                    if any('tavily' in str(msg) for msg in values.get("messages", [])):
-                        source = "tavily"
-                    elif any('arxiv' in str(msg) for msg in values.get("messages", [])):
-                        source = "arxiv"
-                    
-                    result = {
-                        "answer": last_msg.content,
-                        "source": source,
-                        "context": context_to_show if source == "rag" else None,
-                        "raw_output": last_msg.dict() if hasattr(last_msg, "dict") else str(last_msg)
-                    }
+    except Exception as e:
+        print(f"DEBUG - Error in graph execution: {e}")
+        # Return a fallback response
+        return {
+            "answer": f"Error processing the question: {str(e)}. Please try again with a simpler question.",
+            "source": "error",
+            "context": None,
+            "raw_output": {"error": str(e)}
+        }
     
     return result 

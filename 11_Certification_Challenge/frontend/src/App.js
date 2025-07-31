@@ -11,6 +11,40 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Function to detect which tools were used based on response content
+  const detectSourcesUsed = (answer) => {
+    const answerLower = answer.toLowerCase();
+    const sources = [];
+    
+    // Check for RAG usage (mentions of document content, policy details, etc.)
+    if (answerLower.includes('policy') || 
+        answerLower.includes('document') || 
+        answerLower.includes('clause') ||
+        answerLower.includes('umr') ||
+        answerLower.includes('coverage') ||
+        answerLower.includes('exclusion')) {
+      sources.push('RAG');
+    }
+    
+    // Check for external search usage (mentions of search results, current standards, etc.)
+    if (answerLower.includes('search results') || 
+        answerLower.includes('current') ||
+        answerLower.includes('2024') ||
+        answerLower.includes('modern') ||
+        answerLower.includes('recent') ||
+        answerLower.includes('market') ||
+        answerLower.includes('standards')) {
+      sources.push('Tavily');
+    }
+    
+    // If no sources detected, assume RAG was used
+    if (sources.length === 0) {
+      sources.push('RAG');
+    }
+    
+    return sources.join(' + ');
+  };
+
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file && file.type === 'application/pdf') {
@@ -145,7 +179,7 @@ function App() {
           <div className="response-container">
             <h2>Response</h2>
             <div className="response-info">
-              <p><strong>Source:</strong> {response.source}</p>
+              <p><strong>Source:</strong> {detectSourcesUsed(response.answer)}</p>
               <p><strong>Answer:</strong></p>
               <div className="answer-text">{response.answer}</div>
             </div>
