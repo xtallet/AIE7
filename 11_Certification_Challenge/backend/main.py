@@ -6,6 +6,8 @@ from typing import Optional, List, Dict, Any
 import uvicorn
 import tempfile
 import os
+import getpass
+from uuid import uuid4
 from agent_graph import run_agentic_rag
 
 app = FastAPI()
@@ -33,13 +35,19 @@ async def ask(
     tavily_api_key: str = Form(...),
     langsmith_api_key: Optional[str] = Form(None)
 ):
+    # Configure LangSmith if API key is provided
+    if langsmith_api_key:
+        os.environ["LANGCHAIN_TRACING_V2"] = "true"
+        os.environ["LANGCHAIN_PROJECT"] = f"AIE7-S11-Certification-Challenge-{uuid4().hex[0:8]}"
+        os.environ["LANGCHAIN_API_KEY"] = langsmith_api_key
+    
     # Save PDF temporarily
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
         tmp.write(await pdf.read())
         tmp_path = tmp.name
     try:
         # Execute agentic RAG (vectorstore is created internally)
-        result = await run_agentic_rag(question, tmp_path, openai_api_key, tavily_api_key)
+        result = await run_agentic_rag(question, tmp_path, openai_api_key, tavily_api_key, langsmith_api_key)
         return AskResponse(
             answer=result["answer"],
             source=result.get("source", "rag"),

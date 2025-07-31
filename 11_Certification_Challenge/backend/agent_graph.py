@@ -15,6 +15,7 @@ from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
 from langgraph.graph import StateGraph, END
 from langchain.prompts import ChatPromptTemplate
+from uuid import uuid4
 
 # --- PDF and Vectorstore ---
 def process_pdf_and_build_vectorstore(pdf_path: str, openai_api_key: str) -> object:
@@ -262,7 +263,13 @@ def should_continue(state):
     return "agent"
 
 # --- Graph ---
-def build_agentic_graph(vectorstore, openai_api_key, tavily_api_key):
+def build_agentic_graph(vectorstore, openai_api_key, tavily_api_key, langsmith_api_key: Optional[str] = None):
+    # Configure LangSmith if API key is provided
+    if langsmith_api_key:
+        os.environ["LANGCHAIN_TRACING_V2"] = "true"
+        os.environ["LANGCHAIN_PROJECT"] = f"AIE7-S11-Certification-Challenge-{uuid4().hex[0:8]}"
+        os.environ["LANGCHAIN_API_KEY"] = langsmith_api_key
+    
     tool_belt = get_toolbelt(vectorstore, openai_api_key, tavily_api_key)
     print(f"DEBUG - Tool belt created with {len(tool_belt)} tools")
     for i, tool in enumerate(tool_belt):
@@ -275,7 +282,7 @@ def build_agentic_graph(vectorstore, openai_api_key, tavily_api_key):
     
     tool_node = ToolNode(tool_belt)
     def call_model_node(state):
-        return call_model_with_tools(state, openai_api_key, model_with_tools)
+        return call_model_with_tools(state, openai_api_key, model_with_tools, langsmith_api_key)
     
     # Define end node that just returns the current state
     def end_node(state):
@@ -292,7 +299,7 @@ def build_agentic_graph(vectorstore, openai_api_key, tavily_api_key):
     uncompiled_graph.add_edge("action", "agent")
     return uncompiled_graph.compile()
 
-def call_model_with_tools(state, openai_api_key, model_with_tools):
+def call_model_with_tools(state, openai_api_key, model_with_tools, langsmith_api_key: Optional[str] = None):
     question_msg = state["messages"][-1]
     print(f"DEBUG - call_model_with_tools processing message: {type(question_msg)}")
     print(f"DEBUG - call_model_with_tools message content: {question_msg.content[:200]}...")
@@ -392,18 +399,20 @@ Context: {context}"""),
                     state['sources_used'] = set()
                 state['sources_used'].add("arxiv")
                 print("DEBUG - Arxiv tool detected in call_model_with_tools")
-
-    return {
-        "messages": [response],
-        "context": context_docs,
-        "sources_used": state.get("sources_used", set())
-    }
+    
+    return {"messages": [response]}
 
 # --- Main execution ---
-async def run_agentic_rag(question: str, pdf_path: str, openai_api_key: str, tavily_api_key: str) -> dict:
+async def run_agentic_rag(question: str, pdf_path: str, openai_api_key: str, tavily_api_key: str, langsmith_api_key: Optional[str] = None) -> dict:
+    # Configure LangSmith if API key is provided
+    if langsmith_api_key:
+        os.environ["LANGCHAIN_TRACING_V2"] = "true"
+        os.environ["LANGCHAIN_PROJECT"] = f"AIE7-S11-Certification-Challenge-{uuid4().hex[0:8]}"
+        os.environ["LANGCHAIN_API_KEY"] = langsmith_api_key
+    
     vectorstore = process_pdf_and_build_vectorstore(pdf_path, openai_api_key)
     from langchain_core.messages import HumanMessage
-    graph = build_agentic_graph(vectorstore, openai_api_key, tavily_api_key)
+    graph = build_agentic_graph(vectorstore, openai_api_key, tavily_api_key, langsmith_api_key)
     inputs = {"messages": [HumanMessage(content=question)]}
     
     result = None
