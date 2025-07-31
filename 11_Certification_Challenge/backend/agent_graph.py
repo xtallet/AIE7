@@ -53,9 +53,12 @@ IMPORTANT INSTRUCTIONS:
 - Answer questions directly and concisely using the provided context.
 - If the context contains the answer, provide it briefly and clearly.
 - If the context is insufficient, use search tools to find current information.
-- After using search tools 1-2 times, provide a concise final answer and STOP.
+- After using search tools, analyze the results and provide a comprehensive final answer.
+- Do NOT continue searching after you have obtained relevant information.
 - Be direct and to the point - avoid lengthy explanations unless specifically requested.
 - If search tools return errors, provide the best answer you can with available information.
+
+When you receive search results, analyze them and provide a final answer based on the information found.
 
 Question: {question}
 Context: {context}"""),
@@ -232,15 +235,48 @@ def build_agentic_graph(vectorstore, openai_api_key, tavily_api_key):
 
 def call_model_with_tools(state, openai_api_key, model_with_tools):
     question_msg = state["messages"][-1]
+    print(f"DEBUG - call_model_with_tools processing message: {type(question_msg)}")
+    print(f"DEBUG - call_model_with_tools message content: {question_msg.content[:200]}...")
+    print(f"DEBUG - call_model_with_tools total messages in state: {len(state['messages'])}")
+    
     context_docs = state.get("context", [])
     docs_content = "\n\n".join(doc.page_content for doc in context_docs)
     
+    # Get the original question from the first message (HumanMessage)
+    original_question = state["messages"][0].content if state["messages"] else ""
+    
     # Check if this is a document-specific question (like UMR, policy number, etc.)
-    question_lower = question_msg.content.lower()
+    question_lower = original_question.lower()
     document_specific_keywords = ['umr', 'policy number', 'policy no', 'policy #', 'coverage', 'limit', 'premium', 'deductible']
     is_document_question = any(keyword in question_lower for keyword in document_specific_keywords)
     
-    if is_document_question:
+    # If we're processing a ToolMessage (after tool execution), use the general prompt
+    if hasattr(question_msg, '__class__') and 'ToolMessage' in str(question_msg.__class__):
+        is_document_question = False  # Force general prompt for tool results
+        # Use a specific prompt for analyzing tool results
+        tool_result_prompt = ChatPromptTemplate.from_messages([
+            ("system", """You are analyzing search results to answer a question. 
+
+IMPORTANT:
+- You have received search results from external tools.
+- Analyze the search results and provide a comprehensive final answer.
+- Do NOT search again - use the information you have received.
+- Be direct and informative in your response.
+- If the search results don't contain relevant information, state that clearly.
+
+Original Question: {question}
+Search Results: {tool_results}"""),
+            ("human", "Based on the search results, answer the original question.")
+        ])
+        
+        # Extract tool results from the ToolMessage
+        tool_results = question_msg.content if hasattr(question_msg, 'content') else str(question_msg)
+        
+        messages = tool_result_prompt.format_messages(
+            question=original_question,
+            tool_results=tool_results
+        )
+    elif is_document_question:
         # Use a more specific prompt for document questions
         doc_prompt = ChatPromptTemplate.from_messages([
             ("system", """You are an insurance document assistant. Answer questions about insurance documents concisely and directly.
@@ -256,13 +292,13 @@ Context: {context}"""),
             ("human", "{question}")
         ])
         messages = doc_prompt.format_messages(
-            question=question_msg.content,
+            question=original_question,
             context=docs_content
         )
     else:
         # Use the general prompt for other questions
         messages = RAG_PROMPT.format_messages(
-            question=question_msg.content,
+            question=original_question,
             context=docs_content
         )
     
@@ -307,7 +343,9 @@ async def run_agentic_rag(question: str, pdf_path: str, openai_api_key: str, tav
             
             if node == "agent":
                 last_msg = values["messages"][-1]
+                print(f"DEBUG - Agent node processing message: {type(last_msg)}")
                 if hasattr(last_msg, "content") and last_msg.content:
+                    print(f"DEBUG - Agent node content: {last_msg.content[:200]}...")
                     # Check if this was triggered by RAG tool or external tool
                     source = "rag"  # Default to RAG
                     context_to_show = None
@@ -332,6 +370,7 @@ async def run_agentic_rag(question: str, pdf_path: str, openai_api_key: str, tav
             if node == "action":
                 print("DEBUG - Action node executed - using external tools!")
                 tool_msgs = values["messages"]
+                print(f"DEBUG - Number of tool messages: {len(tool_msgs)}")
                 
                 # Check what tool was used
                 last_tool_call = None
@@ -349,8 +388,10 @@ async def run_agentic_rag(question: str, pdf_path: str, openai_api_key: str, tav
                     source = "arxiv"
                     print("DEBUG - Arxiv tool was used")
                 
-                for msg in tool_msgs:
+                for i, msg in enumerate(tool_msgs):
+                    print(f"DEBUG - Tool message {i}: {type(msg)}")
                     if hasattr(msg, "content") and msg.content:
+                        print(f"DEBUG - Tool message {i} content: {msg.content[:200]}...")
                         result = {
                             "answer": msg.content,
                             "source": source,
