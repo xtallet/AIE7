@@ -38,66 +38,12 @@ def process_pdf_and_build_vectorstore(pdf_path: str, openai_api_key: str) -> obj
 
 # --- Toolbelt ---
 def get_toolbelt(vectorstore, openai_api_key, tavily_api_key):
-    def insurance_rag_tool(question: str) -> dict:
-        """
-        Useful for when you need to answer questions about insurance. 
-        Input should be a fully formed question.
-        """
-        # Create a simple RAG graph exactly like in the notebook
-        def retrieve(state):
-            retrieved_docs = vectorstore.as_retriever(search_kwargs={"k": 5}).invoke(state["question"])
-            return {"context": retrieved_docs}
-        
-        def generate(state):
-            docs_content = "\n\n".join(doc.page_content for doc in state["context"])
-            # Use the same simple prompt as in the notebook
-            simple_rag_prompt = ChatPromptTemplate.from_messages([
-                ("system", """You are a helpful assistant who answers questions based on the provided context. You must only use the provided context, and cannot use your own knowledge.
-
-### Question
-{question}
-
-### Context
-{context}"""),
-                ("human", "{question}")
-            ])
-            messages = simple_rag_prompt.format_messages(question=state["question"], context=docs_content)
-            model = ChatOpenAI(model="gpt-4.1-nano", temperature=0, openai_api_key=openai_api_key)
-            response = model.invoke(messages)
-            return {"response": response.content}
-        
-        # Create simple RAG graph exactly like in the notebook
-        from langgraph.graph import StateGraph, START
-        from typing_extensions import TypedDict
-        from langchain_core.documents import Document
-        
-        class State(TypedDict):
-            question: str
-            context: List[Document]
-            response: str
-        
-        # Use the same approach as in the notebook
-        graph_builder = StateGraph(State).add_sequence([retrieve, generate])
-        graph_builder.add_edge(START, "retrieve")
-        graph = graph_builder.compile()
-        
-        # Execute the graph
-        result = graph.invoke({"question": question})
-        
-        return {
-            "messages": [HumanMessage(content=result["response"])],
-            "context": result["context"]
-        }
-    
-    insurance_rag_tool.__name__ = "insurance_rag_tool"
-    insurance_rag_tool.description = "Useful for when you need to answer questions about insurance. Input should be a fully formed question."
-    
     # Set Tavily API key as environment variable
     os.environ["TAVILY_API_KEY"] = tavily_api_key
     tavily_tool = TavilySearchResults(max_results=5)
     
     arxiv_tool = ArxivQueryRun()
-    return [insurance_rag_tool, tavily_tool, arxiv_tool]
+    return [tavily_tool, arxiv_tool]
 
 # --- Prompt ---
 RAG_PROMPT = ChatPromptTemplate.from_messages([
@@ -396,10 +342,7 @@ async def run_agentic_rag(question: str, pdf_path: str, openai_api_key: str, tav
                 
                 # Determine source based on tool used
                 source = "tool"  # Default for external tools
-                if last_tool_call and last_tool_call.get('name') == 'insurance_rag_tool':
-                    source = "rag"
-                    print("DEBUG - RAG tool was used")
-                elif last_tool_call and 'tavily' in last_tool_call.get('name', ''):
+                if last_tool_call and 'tavily' in last_tool_call.get('name', ''):
                     source = "tavily"
                     print("DEBUG - Tavily tool was used")
                 elif last_tool_call and 'arxiv' in last_tool_call.get('name', ''):
