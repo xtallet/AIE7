@@ -14,4 +14,8 @@ dependencies = [
     "langsmith>=0.4.4",
     "pymupdf>=1.26.3",
     "tavily-python>=0.7.9",
+    "fastapi>=0.110.0",
+    "uvicorn>=0.29.0",
+    "pydantic>=2.6.0",
+    "python-multipart>=0.0.6",
 ]
