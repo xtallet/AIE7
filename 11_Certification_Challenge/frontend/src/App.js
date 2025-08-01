@@ -22,18 +22,38 @@ function App() {
         answerLower.includes('clause') ||
         answerLower.includes('umr') ||
         answerLower.includes('coverage') ||
-        answerLower.includes('exclusion')) {
+        answerLower.includes('exclusion') ||
+        answerLower.includes('institute') ||
+        answerLower.includes('endorsement') ||
+        answerLower.includes('2015') ||
+        answerLower.includes('provided context') ||
+        answerLower.includes('based on the provided')) {
       sources.push('RAG');
     }
     
-    // Check for external search usage (mentions of search results, current standards, etc.)
+    // Check for external search usage (mentions of current information, standards, etc.)
     if (answerLower.includes('search results') || 
-        answerLower.includes('current') ||
-        answerLower.includes('2024') ||
-        answerLower.includes('modern') ||
-        answerLower.includes('recent') ||
-        answerLower.includes('market') ||
-        answerLower.includes('standards')) {
+        answerLower.includes('according to recent') ||
+        answerLower.includes('current market') ||
+        answerLower.includes('latest developments') ||
+        answerLower.includes('recent studies') ||
+        answerLower.includes('market analysis') ||
+        answerLower.includes('industry standards') ||
+        answerLower.includes('as of 2024') ||
+        answerLower.includes('as of 2025') ||
+        answerLower.includes('current standards') ||
+        answerLower.includes('modern policies') ||
+        answerLower.includes('evolved significantly') ||
+        answerLower.includes('by 2024') ||
+        answerLower.includes('in 2024') ||
+        answerLower.includes('naic reports') ||
+        answerLower.includes('industry guidelines') ||
+        answerLower.includes('compared to 2015') ||
+        answerLower.includes('since 2015') ||
+        answerLower.includes('over time') ||
+        answerLower.includes('have evolved') ||
+        answerLower.includes('current cybersecurity') ||
+        answerLower.includes('modern policies')) {
       sources.push('Tavily');
     }
     
@@ -99,7 +119,7 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Agentic RAG - PDF Question Answering</h1>
+        <h1>End-to-End Agentic RAG for Insurance Documents</h1>
         <p>Upload a PDF, ask a question and get answers using RAG, Tavily and Arxiv</p>
       </header>
 

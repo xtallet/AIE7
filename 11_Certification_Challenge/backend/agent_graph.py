@@ -50,24 +50,12 @@ def get_toolbelt(vectorstore, openai_api_key, tavily_api_key):
 RAG_PROMPT = ChatPromptTemplate.from_messages([
     ("system", """You are a helpful AI assistant that answers questions using available information and external search tools when needed.
 
-CRITICAL INSTRUCTIONS - YOU MUST FOLLOW THESE:
+INSTRUCTIONS:
+1. Analyze the response from the "pre_rag_context" node
+2. If you believe you have enough information to answer the question completely, provide a response
+3. If you need more information, use Tavily or Arxiv to search the internet and complement your response
 
-1. If the question asks about ANY current information, recent developments, or information that would not be in this document's time period → YOU MUST USE SEARCH TOOLS. DO NOT ANSWER FROM THE DOCUMENT ALONE.
-
-2. If the question mentions years like 2024, 2025, or asks about "current standards", "market standards", "still standard" → YOU MUST USE SEARCH TOOLS.
-
-3. If the question has multiple parts and one part requires current information → YOU MUST USE SEARCH TOOLS for that part.
-
-4. YOU CANNOT claim to know current standards without searching for them.
-
-5. When you decide to search, use the search tools immediately. DO NOT try to answer from the document first.
-
-6. Only answer from the document if the question is about specific details that would be in the document (like UMR numbers, policy details, etc.).
-
-DECISION FRAMEWORK:
-- Document-specific questions (UMR, policy numbers, etc.) → Use context only
-- Current information questions → USE SEARCH TOOLS
-- Mixed questions → USE SEARCH TOOLS for current parts
+Priority: Always try to answer from the document first, only use external tools when necessary.
 
 Question: {question}
 Context: {context}"""),
@@ -176,91 +164,14 @@ def should_continue(state):
         print(f"DEBUG - Stopping due to message count limit ({message_count})")
         return "end"
     
-    # Get the original question to understand what was asked
-    original_question = state["messages"][0].content if state["messages"] else ""
-    question_lower = original_question.lower()
-    print(f"DEBUG - should_continue: original_question = {original_question[:100]}...")
-    
-    # Check if this is a question that requires external search (generic approach)
-    requires_external_search = any(keyword in question_lower for keyword in [
-        "current", "recent", "latest", "now", "today", "modern",
-        "does this", "would this", "account for", "cover",
-        "since", "post-", "after", "update", "development",
-        "still standard", "current standards", "market standards",
-        "compare to", "how does this compare"
-    ])
-    
-    # Also check for year patterns that indicate current information needs
-    import re
-    year_pattern = re.search(r'20[2-9][0-9]', question_lower)
-    if year_pattern:
-        requires_external_search = True
-        print(f"DEBUG - should_continue: Year detected: {year_pattern.group()}")
-    
-    print(f"DEBUG - should_continue: requires_external_search = {requires_external_search}")
-    
-    # If the last message has content (not just tool calls), check if it's a final answer
-    if hasattr(last_message, 'content') and last_message.content and last_message.content.strip():
-        content = last_message.content.lower()
-        print(f"DEBUG - should_continue: content length = {len(content)}")
-        print(f"DEBUG - should_continue: content preview = {content[:100]}...")
-        
-        # Check for final answer indicators
-        final_answer_indicators = [
-            "based on the search results",
-            "according to the information found",
-            "the answer is",
-            "here's what i found",
-            "based on the latest information",
-            "thank you",
-            "you're welcome",
-            "feel free to ask",
-            "don't hesitate to ask",
-            "i'm here to help",
-            "if you have any",
-            "if you need assistance",
-            "in summary",
-            "therefore",
-            "conclusion"
-        ]
-        
-        if any(indicator in content for indicator in final_answer_indicators):
-            print(f"DEBUG - Final answer detected: {content[:100]}...")
-            return "end"
-        
-        # If content is substantial and no tool calls, check if it's appropriate to stop
-        if len(content) > 20 and not (hasattr(last_message, 'tool_calls') and last_message.tool_calls):
-            # CRITICAL: If the question requires external search but we haven't used tools yet, continue
-            if requires_external_search and iteration_count == 0:
-                print(f"DEBUG - Question requires external search but no tools used yet, continuing...")
-                return "agent"
-            
-            # If we have a direct answer for document-specific questions, stop
-            document_specific_keywords = ['umr', 'policy number', 'policy no', 'policy #', 'coverage', 'limit', 'premium', 'deductible']
-            is_document_question = any(keyword in question_lower for keyword in document_specific_keywords)
-            
-            # CRITICAL: Even if it's a document question, if it mentions current/future dates, we need external info
-            if is_document_question and not requires_external_search:
-                print(f"DEBUG - Document-specific answer detected: {content[:50]}...")
-                return "end"
-            
-            # For other cases, if we have substantial content, it's likely a final answer
-            print(f"DEBUG - Substantial answer without tool calls detected: {content[:50]}...")
-            return "end"
-        
-        # If we have a direct answer (like "The UMR is X"), stop
-        if any(phrase in content for phrase in ["is ", "are ", "was ", "were "]) and len(content) < 100:
-            print(f"DEBUG - Direct answer detected: {content[:50]}...")
-            return "end"
-    
-    # If we have tool calls, continue to action
+    # SIMPLE LOGIC: If we have tool calls, continue to action
     if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
         print(f"DEBUG - Tool calls detected, continuing to action")
         return "action"
     
-    # Default: continue to agent
-    print(f"DEBUG - Default: continuing to agent")
-    return "agent"
+    # If no tool calls, we have a final answer - stop
+    print(f"DEBUG - No tool calls detected, stopping with final answer")
+    return "end"
 
 # --- Graph ---
 def build_agentic_graph(vectorstore, openai_api_key, tavily_api_key, langsmith_api_key: Optional[str] = None):
@@ -313,8 +224,22 @@ def call_model_with_tools(state, openai_api_key, model_with_tools, langsmith_api
     
     # Check if this is a document-specific question (like UMR, policy number, etc.)
     question_lower = original_question.lower()
-    document_specific_keywords = ['umr', 'policy number', 'policy no', 'policy #', 'coverage', 'limit', 'premium', 'deductible']
+    document_specific_keywords = [
+        'umr', 'policy number', 'policy no', 'policy #', 'coverage', 'limit', 'premium', 'deductible',
+        'broker', 'insurer', 'reinsurer', 'who is', 'what is', 'where is', 'when is',
+        'listed in', 'mentioned in', 'in this document', 'in this policy', 'in this contract'
+    ]
     is_document_question = any(keyword in question_lower for keyword in document_specific_keywords)
+    
+    # Additional check for document-specific patterns
+    document_specific_patterns = [
+        "who is the", "what is the", "where is the", "when is the",
+        "listed in this", "mentioned in this", "in this document",
+        "in this policy", "in this contract", "in this agreement"
+    ]
+    
+    has_document_pattern = any(pattern in question_lower for pattern in document_specific_patterns)
+    is_document_question = is_document_question or has_document_pattern
     
     # If we're processing a ToolMessage (after tool execution), use the general prompt
     if hasattr(question_msg, '__class__') and 'ToolMessage' in str(question_msg.__class__):
