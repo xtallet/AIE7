@@ -24,7 +24,7 @@ Welcome to my AIE7 Certification Challenge submission! This project demonstrates
 
 ### 📚 Additional Documentation
 - **[TASK4_APP_README.md](TASK4_APP_README.md)** - Detailed explanation of the Task4 End-to-End Agentic RAG
-- **[LANGSMITH_INTEGRATION_EN.md](LANGSMITH_INTEGRATION_EN.md)** - LangSmith integration documentation
+- **[LANGSMITH_INTEGRATION_README.md](LANGSMITH_INTEGRATION_README.md)** - LangSmith integration documentation
 
 
 ---
