@@ -5,7 +5,8 @@ Welcome to my AIE7 Certification Challenge submission! This project demonstrates
 ## 📋 Project Resources
 
 ### 🎥 Live Demo & Use Case Description
-**[Loom Video Demo](YOUR_LOOM_VIDEO_LINK_HERE)**
+**Loom Video Demo**
+- See my Loom Video [here](https://www.loom.com/share/b2a437bf1f3b407f8c6e33dbf916739a)
 - Live demonstration of the application
 - Detailed explanation of the use case and implementation
 
@@ -26,6 +27,14 @@ Welcome to my AIE7 Certification Challenge submission! This project demonstrates
 - **[TASK4_APP_README.md](TASK4_APP_README.md)** - Detailed explanation of the Task4 End-to-End Agentic RAG
 - **[LANGSMITH_INTEGRATION_README.md](LANGSMITH_INTEGRATION_README.md)** - LangSmith integration documentation
 
+### 🧪 RAGAS Testing & Evaluation
+This is the Jupyter Notebook I have been using to perform all RAGAS evaluations :
+**[s11_Certification_Challenge.ipynb](s11_Certification_Challenge.ipynb)**
+
+- Comprehensive RAGAS testing for different retrievers
+- Performance metrics and evaluation results
+- Comparative analysis of retrieval methods
+- Quality assessment of the RAG system
 
 ---
 
