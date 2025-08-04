@@ -20,7 +20,7 @@ Welcome to my AIE7 Certification Challenge submission! This project demonstrates
 - Complete source code > The link to the code for my Agentic RAG app, can be found at [backend/agent_graph.py](backend/agent_graph.py)
 - Entire Backend code at [backend/](backend)
 - Entire Frontend code at [frontend](frontend)
-- The Insurance Policy Pdf I am using at [data/data/F24716_AttachmentAExpiring1415PolicySoFComplete.pdf](data/data/F24716_AttachmentAExpiring1415PolicySoFComplete.pdf)
+- The Insurance Policy Pdf I am using at [data/F24716_AttachmentAExpiring1415PolicySoFComplete.pdf](data/F24716_AttachmentAExpiring1415PolicySoFComplete.pdf)
 
 ### 📚 Additional Documentation
 - **[TASK4_APP_README.md](TASK4_APP_README.md)** - Detailed explanation of the Task4 End-to-End Agentic RAG
