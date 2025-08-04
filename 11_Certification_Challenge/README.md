@@ -38,4 +38,4 @@ This is the Jupyter Notebook I have been using to perform all RAGAS evaluations,
 
 ---
 
-*This project was created as part of the AIE7 Certification Challenge by XTALLET.* 
+*This project was created as part of the AIE7 Certification Challenge by Xavi Tallet.* 
