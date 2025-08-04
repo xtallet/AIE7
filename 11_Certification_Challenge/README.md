@@ -11,7 +11,7 @@ Welcome to my AIE7 Certification Challenge submission! This project demonstrates
 - Detailed explanation of the use case and implementation
 
 ### 📄 Written Documentation
-**[XTALLET_Certification_Challenge](XTALLET_Certification_Challenge.pdf)**
+**[XTALLET_Certification_Challenge.pdf](XTALLET_Certification_Challenge.pdf)**
 - Comprehensive answers to all deliverables
 - Detailed responses to each certification question
 - Technical implementation overview
@@ -28,7 +28,7 @@ Welcome to my AIE7 Certification Challenge submission! This project demonstrates
 - **[LANGSMITH_INTEGRATION_README.md](LANGSMITH_INTEGRATION_README.md)** - LangSmith integration documentation
 
 ### 🧪 RAGAS Testing & Evaluation
-This is the Jupyter Notebook I have been using to perform all RAGAS evaluations :
+This is the Jupyter Notebook I have been using to perform all RAGAS evaluations, in case you want to check it :
 **[s11_Certification_Challenge.ipynb](s11_Certification_Challenge.ipynb)**
 
 - Comprehensive RAGAS testing for different retrievers
