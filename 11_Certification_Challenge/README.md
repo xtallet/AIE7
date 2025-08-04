@@ -10,7 +10,7 @@ Welcome to my AIE7 Certification Challenge submission! This project demonstrates
 - Detailed explanation of the use case and implementation
 
 ### 📄 Written Documentation
-**[XTALLET_Certification_Challenge](XTALLET_Certification_Challenge)**
+**[XTALLET_Certification_Challenge](XTALLET_Certification_Challenge.pdf)**
 - Comprehensive answers to all deliverables
 - Detailed responses to each certification question
 - Technical implementation overview
