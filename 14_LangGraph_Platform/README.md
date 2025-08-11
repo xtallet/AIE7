@@ -94,7 +94,7 @@ For example : <br>
 
 Trade-offs when adjusting this parameter :<br>
 
-Increasing `chunkg_overlap` :<br>
+<b>Increasing `chunkg_overlap` :</b><br>
 ✅ Benefits: <br>
 Better context preservation: Important information at chunk boundaries is not lost.<br>
 Improved retrieval: Related concepts that span chunk boundaries are captured.<br>
@@ -105,7 +105,7 @@ Higher computational cost: More embeddings to process.<br>
 Potential redundancy: Same information retrieved multiple times
 
 
-Decreasing `chunk_overlap` :<br>
+<b>Decreasing `chunk_overlap` :</b><br>
 ✅ Benefits:
 Reduced storage: Less redundant data.<br>
 Lower computational cost: Fewer embeddings to process.<br>
