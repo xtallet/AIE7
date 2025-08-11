@@ -10,7 +10,8 @@ def main():
             "messages": [
                 {
                     "role": "human",
-                    "content": "What is the MuonClip optimizer, and what paper did it first appear in?",
+                    #"content": "What is the MuonClip optimizer, and what paper did it first appear in?",
+                    "content": "show me the top headlines from the US in technology",
                 }
             ]
         },
