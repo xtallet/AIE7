@@ -106,12 +106,12 @@ Potential redundancy: Same information retrieved multiple times
 
 
 <b>Decreasing `chunk_overlap` :</b><br>
-✅ Benefits:
+✅ Benefits: <br>
 Reduced storage: Less redundant data.<br>
 Lower computational cost: Fewer embeddings to process.<br>
 Cleaner chunks: Less duplicate information
 <br><br>
-❌ Drawbacks:
+❌ Drawbacks: <br>
 Context loss: Important information at chunk boundaries may be lost.<br>
 Poorer retrieval: Related concepts split across chunks may be missed.<br>
 Reduced semantic coherence: Chunks may lack complete context.
