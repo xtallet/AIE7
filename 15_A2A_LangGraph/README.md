@@ -81,15 +81,35 @@ uv run python app/test_client.py
 
 Build a LangGraph Graph to "use" your application.
 
-Do this by creating a Simple Agent that can make API calls to the 🤖Agent Node above through the A2A protocol. 
+Do this by creating a Simple Agent that can make API calls to the 🤖Agent Node above through the A2A protocol.
+
+#### ✅ Answer:
+I have completed this activity by creating a simple LangGraph client agent graph that communicates with my existing A2A server through the A2A protocol. The client graph contains a single node that sends user queries to the server, receives responses that include tool executions (web search, academic search, RAG), and returns the processed information back to the user.<br>
+NOTE : The Graph Client code can be found here - [activity1_client_agent_graph.py](app/activity1_client_agent_graph.py)
 
 ### ❓ Question #1:
 
 What are the core components of an `AgentCard`?
 
+#### ✅ Answer: 
+
+The core components of an `AgentCard` are :<br>
+<b>- name :</b> A descriptive name for the agent.<br>
+<b>- description :</b> A detailed description of what the agent does and its capabilities.<br>
+<b>- url :</b> The endpoint where the agent can be reached.<br>
+<b>- version :</b> The version number of the agent.<br>
+<b>- defaultInputModes :</b> Supported input formats.<br>
+<b>- defaultOutputModes :</b> Supported output formats.<br>
+<b>- capabilities :</b> Agent features like streaming and push notifications.<br>
+<b>- skills :</b> Specific tools and abilities the agent possesses.<br>
+
 ### ❓ Question #2:
 
 Why is A2A (and other such protocols) important in your own words?
+
+#### ✅ Answer: 
+
+A2A is important because it creates a standardized "language" that allows different AI agents to communicate with each other, regardless of how they were built or what framework they use. In my own experience implementing this, I can see how A2A enables my LangGraph client agent to seamlessly talk to my existing A2A server without needing to rewrite or modify the server code. It's like having a universal translator - my client agent can discover what my server agent can do (through the AgentCard), send requests in a format it understands, and receive responses that both agents can interpret. This standardization means I can build new agents that use existing ones, or even have agents from different developers work together, without worrying about compatibility issues. It's essentially the foundation for building a network of interoperable AI agents that can collaborate and share capabilities.
 
 ### 🚧 Advanced Build:
 
@@ -104,6 +124,11 @@ Example:
 
 "You are an expert in Machine Learning, and you want to learn about what makes Kimi K2 so incredible. You are not satisfied with surface level answers, and you wish to have sources you can read to verify information."
 </details>
+
+#### ✅ Advanced Build | Answer :
+
+I have implemented an advanced LangChain agent with three distinct personas (academic researcher, tech journalist, and curious student) that communicates with my existing A2A server through the A2A protocol. The agent queries my server, receives responses with tool executions, and presents information according to each persona's unique communication style and goals. This demonstrates seamless interoperability between different agent frameworks using standardized protocols.
+NOTE - The code can be found here : [advanced_build_langchain.py](app/advanced_build_langchain.py)
 
 ## 📁 Implementation Details
 

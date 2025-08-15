@@ -21,6 +21,7 @@ dependencies = [
     "tiktoken>=0.5.1",
     "qdrant-client>=1.7.0",
     "pymupdf>=1.23.0",
+    "langgraph-cli[inmem]>=0.1.59",
 ]
 
 [tool.hatch.build.targets.wheel]
