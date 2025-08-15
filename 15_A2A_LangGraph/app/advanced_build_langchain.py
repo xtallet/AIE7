@@ -264,6 +264,3 @@ def run_random_persona():
 if __name__ == "__main__":
     # Run a random persona example
     run_random_persona()
-    
-    # Uncomment to run all personas
-    # asyncio.run(run_persona_examples()) 

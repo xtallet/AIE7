@@ -127,7 +127,7 @@ Example:
 
 #### ✅ Advanced Build | Answer :
 
-I have implemented an advanced LangChain agent with three distinct personas (academic researcher, tech journalist, and curious student) that communicates with my existing A2A server through the A2A protocol. The agent queries my server, receives responses with tool executions, and presents information according to each persona's unique communication style and goals. This demonstrates seamless interoperability between different agent frameworks using standardized protocols.
+I have implemented an advanced LangChain agent with three distinct personas (academic researcher, tech journalist, and curious student) that communicates with my existing A2A server through the A2A protocol. The agent queries my server, receives responses with tool executions, and presents information according to each persona's unique communication style and goals. This demonstrates seamless interoperability between different agent frameworks using standardized protocols.<br>
 NOTE - The code can be found here : [advanced_build_langchain.py](app/advanced_build_langchain.py)
 
 ## 📁 Implementation Details
