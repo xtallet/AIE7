@@ -216,47 +216,6 @@ class PersonaAgent:
             return f"Error running agent: {str(e)}"
 
 
-async def run_persona_examples():
-    """Run examples with different personas."""
-    
-    # Check for OpenAI API key
-    if not os.getenv('OPENAI_API_KEY'):
-        logger.error("OPENAI_API_KEY environment variable not set.")
-        logger.error("Please set your OpenAI API key in the .env file or as an environment variable.")
-        return
-    
-    # Initialize A2A tool
-    a2a_tool = A2ATool()
-    try:
-        await a2a_tool.initialize()
-        
-        # Define personas and their queries
-        personas = {
-            "academic_researcher": "What are the latest breakthroughs in transformer architectures? I need detailed technical explanations with academic sources.",
-            "tech_journalist": "What are the most surprising AI developments in 2024? I need concrete examples and statistics for my article.",
-            "curious_student": "How does AI affect my everyday life? Give me simple examples I can understand."
-        }
-        
-        # Run each persona
-        for persona_name, query in personas.items():
-            logger.info(f"\n{'='*50}")
-            logger.info(f"Running persona: {persona_name}")
-            logger.info(f"Query: {query}")
-            logger.info(f"{'='*50}")
-            
-            # Create and run the persona agent
-            persona_agent = PersonaAgent(persona_name, a2a_tool)
-            result = await persona_agent.run(query)
-            
-            logger.info(f"\nPersona {persona_name} response:")
-            logger.info(f"{result}")
-            logger.info(f"\n{'='*50}\n")
-            
-    finally:
-        # Always clean up resources
-        await a2a_tool.cleanup()
-
-
 def run_random_persona():
     """Run a single random persona for testing."""
     
