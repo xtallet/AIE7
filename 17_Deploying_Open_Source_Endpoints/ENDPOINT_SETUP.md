@@ -37,3 +37,26 @@ Together offers serverless endpoints for embedding models, we'll be using the [B
 ### ❓ Question #1: 
 
 What is the difference between serverless and dedicated endpoints?
+
+##### ✅ Answer:
+
+Serverless endpoints and dedicated endpoints are two different ways of accessing a model in the cloud:
+
+- <b>Serverless endpoints</b><br>
+Work “on demand”: they are only activated when you make a request.<br>
+You don’t need to configure or maintain servers.<br>
+They automatically scale based on demand.<br>
+The cost depends on usage (for example, processed tokens or compute time).<br>
+They are ideal for variable workloads or experimentation.<br>
+
+- <b>Dedicated endpoints</b><br>
+You reserve dedicated compute instances for your application.<br>
+Performance is more predictable (because the resources are yours, not shared).<br>
+They provide lower latency and greater control over availability.<br>
+The cost is fixed (you pay for the instances while they are running, even if unused).<br>
+They are more convenient when you need constant usage, low latency, or strict SLA compliance.<br>
+
+<b>Key difference :</b><br>
+
+<b>Serverless</b> = flexible, pay only for what you use, great for intermittent workloads.<br>
+<b>Dedicated</b> = exclusive and always-available resources, better for production with high traffic or critical needs.
